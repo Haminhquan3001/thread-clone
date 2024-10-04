@@ -11,7 +11,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-
+import { useOrganization } from "@clerk/nextjs";
 import * as z from "zod";
 import { ThreadValidation } from "@/lib/validation/thread";
 import { Textarea } from "../ui/textarea";
@@ -19,6 +19,8 @@ import { Button } from "../ui/button";
 import { createThread } from "@/lib/actions/thread.actions";
 
 function PostThread({ userId }: { userId: string }) {
+
+    const { organization } = useOrganization();
     const router = useRouter();
     const pathName = usePathname();
 
@@ -35,7 +37,7 @@ function PostThread({ userId }: { userId: string }) {
             {
                 text: values.thread,
                 author: userId,
-                communityId: null,
+                communityId: organization ? organization.id : null,
                 path: pathName
             });
 

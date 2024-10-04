@@ -68,9 +68,12 @@ export const POST = async (request: Request) => {
     const { id, name, slug, logo_url, image_url, created_by } =
       evnt?.data ?? {};
 
+    console.log("evnt?.data: ", evnt?.data)
+
     try {
       // @ts-ignore
-      await createCommunity(
+      console.log("attempting to create community")
+      const community = await createCommunity(
         // @ts-ignore
         id,
         name,
@@ -79,6 +82,7 @@ export const POST = async (request: Request) => {
         "org bio",
         created_by
       );
+      console.log("community created: ", community)
 
       return NextResponse.json({ message: "User created" }, { status: 201 });
     } catch (err) {

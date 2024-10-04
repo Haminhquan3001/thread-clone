@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import Thread from "../models/thread.model";
 import User from "../models/user.model";
 import { connectToDB } from "../mongoose"
+import Community from "../models/community.model";
 
 interface Params {
     text: string,
@@ -15,17 +16,34 @@ export async function createThread({ text, author, communityId, path }: Params) 
 
     try {
         await connectToDB();
-        const createThread = await Thread.create({ text, author, community: null, });
+        const communityIdObject = await Community.findOne(
+            { id: communityId },
+            { _id: 1 }
+        );
+        console.log("communityID: ", communityIdObject)
+
+        const createThread = await Thread.create({
+            text,
+            author,
+            community: communityIdObject,
+        });
         await User.findByIdAndUpdate(author,
             { $push: { threads: createThread._id } }
         );
+
+        if (communityIdObject) {
+            // Update Community model
+            await Community.findByIdAndUpdate(communityIdObject, {
+                $push: { threads: createThread._id },
+            });
+        }
         revalidatePath(path)
     } catch (error: any) {
         throw new Error(`fail to create a Thread ${error.message}`)
     }
 }
 
-export async function fetchPost(pageNumber = 1, pageSize = 20) {
+export async function fetchPosts(pageNumber = 1, pageSize = 20) {
     try {
         await connectToDB();
         const skipAmt = (pageNumber - 1) * pageSize;
@@ -43,6 +61,10 @@ export async function fetchPost(pageNumber = 1, pageSize = 20) {
             .sort({ createdAt: 'desc' })
             .skip(skipAmt).limit(pageSize)
             .populate({ path: 'author', model: User })
+            .populate({
+                path: "community",
+                model: Community,
+            })
             .populate({
                 path: 'children',
                 populate: {

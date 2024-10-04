@@ -12,7 +12,7 @@ const communitySchema = new Schema({
     name: {
         type: String, required: true
     },
-    bio: { type: String },
+    bio: String,
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -27,7 +27,7 @@ const communitySchema = new Schema({
             ref: 'User'
         }
     ],
-    image: { type: String },
+    image: String,
 });
 
 const Community = models.Community || model("Community", communitySchema);
